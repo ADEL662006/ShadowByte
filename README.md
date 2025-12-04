@@ -32,10 +32,8 @@ pip install -r requirements.txt
 python Programing\Python_scripts\script1.py 
  
 ## Team Members 
-- Leader: Adel Abdelkrim 
-- Member 1 
-- Member 2 
-- Member 3 
+- Team: ShadowByte 
+- Leader: Adel Abdelkrim Mohamed Abdelkrim 
  
 ## License 
 This project is licensed under the MIT License. 
