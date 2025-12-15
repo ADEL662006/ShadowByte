@@ -1,40 +1,55 @@
-import os
+import tensorflow as tf
+from tensorflow import keras
+
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+
 import cv2
 import numpy as np
-from tensorflow import keras
-from keras.utils import to_categorical 
-
+import os
 
 train_folder = r"C:\Users\Adel\Downloads\fruits-360-100x100-main\Training"
 test_folder = r"C:\Users\Adel\Downloads\fruits-360-100x100-main\Test"
 
-def load_data(folder):
-    images = []
-    labels = []
-    classes = os.listdir(folder)
-    for label, fruit in enumerate(classes):
-        fruit_folder = os.path.join(folder, fruit)
-        for file in os.listdir(fruit_folder):
-            img_path = os.path.join(fruit_folder, file)
-            img = cv2.imread(img_path)
-            if img is not None:
-                img = cv2.resize(img, (100,100))
-                images.append(img)
-                labels.append(label)
-    return np.array(images), np.array(labels), classes
+train_datagen = ImageDataGenerator(
+    preprocessing_function=preprocess_input,
+    rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.1,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest'
+)
 
-# تحميل الداتا
-X_train, y_train, classes = load_data(train_folder)
-X_test, y_test, _ = load_data(test_folder)
+test_datagen = ImageDataGenerator(
+    preprocessing_function=preprocess_input
+)
 
-# Normalize
-X_train = X_train / 255.0
-X_test = X_test / 255.0
+train_generator = train_datagen.flow_from_directory(
+    train_folder,
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode="categorical"
+)
 
-# One-hot encode
-y_train = to_categorical(y_train, num_classes=len(classes))
-y_test = to_categorical(y_test, num_classes=len(classes))
+test_generator = test_datagen.flow_from_directory(
+    test_folder,
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode="categorical",
+    shuffle=False
+)
 
-print("Training set:", X_train.shape, y_train.shape)
-print("Test set:", X_test.shape, y_test.shape)
-print("Classes:", classes)
+classes = list(train_generator.class_indices.keys())
+num_classes = len(classes)
+
+with open("classes.txt", "w", encoding="utf-8") as f:
+    for c in classes:
+        f.write(c + "\n")
+
+print("Number of classes:", num_classes)
+print(classes[:15])
